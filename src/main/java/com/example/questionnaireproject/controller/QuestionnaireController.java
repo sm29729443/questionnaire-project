@@ -64,22 +64,11 @@ public class QuestionnaireController {
             @RequestBody QuestionnaireSessionRequest questionnaireSessionRequest,
             HttpSession session
             ) {
-        log.info("List quetsion 內容:{}",questionnaireSessionRequest.getQuestionList());
         session.setAttribute("quName", questionnaireSessionRequest.getQuName());
         session.setAttribute("quDescription", questionnaireSessionRequest.getQuDescription());
         session.setAttribute("beginDate", questionnaireSessionRequest.getBeginDate());
         session.setAttribute("endedDate", questionnaireSessionRequest.getEndedDate());
         session.setAttribute("questionList", questionnaireSessionRequest.getQuestionList());
-
-        log.info("id:{}", session.getId());
-        log.info("quName:{}", session.getAttribute("quName"));
-        log.info("quDescription:{}", session.getAttribute("quDescription"));
-        log.info("beginDate:{}", session.getAttribute("beginDate"));
-        log.info("endedDate:{}", session.getAttribute("endedDate"));
-        List<Question> questionList = (List<Question>) session.getAttribute("questionList");
-        for (int i = 0; i < questionList.size(); i++) {
-            log.info("question content:{}", questionList.get(i));
-        }
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

@@ -17,5 +17,5 @@ public class QuestionnaireSessionRequest {
     private String quDescription;
     private Date beginDate;
     private Date endedDate;
-    private List<Question> questionList;
+    private List<QuestionRequest> questionList;
 }

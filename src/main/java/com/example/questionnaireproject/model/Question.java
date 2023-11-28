@@ -16,13 +16,5 @@ public class Question {
     @JsonProperty("q_answer")
     String qAnswer;
 
-    @Override
-    public String toString() {
-        return "Question{" +
-                "qId=" + qId +
-                ", pqId=" + pqId +
-                ", qProblem='" + qProblem + '\'' +
-                ", qAnswer='" + qAnswer + '\'' +
-                '}';
-    }
+
 }

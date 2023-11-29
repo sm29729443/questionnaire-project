@@ -83,11 +83,8 @@ public class QuestionnaireController {
         primaryQuestionnaire.setPqCreatedDate(new Date(session.getAttribute("beginDate").toString()));
         primaryQuestionnaire.setPqEndedDate(new Date(session.getAttribute("endedDate").toString()));
         primaryQuestionnaire.setPqStatus(status);
-        Integer pqId = questionnaireService.createPrimaryQuestionnaire(primaryQuestionnaire);
-        Question question = new Question();
-        question.setPqId(pqId);
         List<QuestionRequest> list = (List<QuestionRequest>) session.getAttribute("questionList");
-        questionnaireService.createQuestion(pqId, list);
+        questionnaireService.createPrimaryQuestionnaire(primaryQuestionnaire, list);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

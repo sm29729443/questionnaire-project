@@ -15,7 +15,5 @@ public interface QuestionnaireService {
 
     Integer countQuestionnaires(QuestionnaireQueryParam questionnaireQueryParam);
 
-    Integer createPrimaryQuestionnaire(PrimaryQuestionnaire primaryQuestionnaire);
-
-    void createQuestion(Integer quId, List<QuestionRequest> list);
+    void createPrimaryQuestionnaire(PrimaryQuestionnaire primaryQuestionnaire, List<QuestionRequest> list);
 }

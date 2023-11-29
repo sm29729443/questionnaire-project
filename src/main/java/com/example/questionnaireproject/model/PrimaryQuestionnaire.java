@@ -7,8 +7,9 @@ import lombok.Setter;
 
 import java.util.Date;
 
-@Getter
+
 @Setter
+@Getter
 public class PrimaryQuestionnaire {
     @JsonProperty("pq_id")
     private Integer pqId;
@@ -22,6 +23,5 @@ public class PrimaryQuestionnaire {
     private Date pqEndedDate;
     @JsonProperty("pq_description")
     private String pqDescription;
-
 
 }

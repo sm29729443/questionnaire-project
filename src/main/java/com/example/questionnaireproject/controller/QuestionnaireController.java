@@ -1,5 +1,7 @@
 package com.example.questionnaireproject.controller;
 
+import com.example.questionnaireproject.constants.QuestionnaireStatus;
+import com.example.questionnaireproject.dto.QuestionRequest;
 import com.example.questionnaireproject.dto.QuestionnaireQueryParam;
 import com.example.questionnaireproject.dto.QuestionnaireSessionRequest;
 import com.example.questionnaireproject.model.PrimaryQuestionnaire;
@@ -14,8 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
@@ -34,8 +36,8 @@ public class QuestionnaireController {
     // 問卷列表查詢功能
     @GetMapping("/primaryQuestionnaires")
     public ResponseEntity<Page<PrimaryQuestionnaire>> getPrimaryQuestionnaires(
-            @RequestParam @NotNull @DateTimeFormat(pattern="yyyy-MM-dd") Date beginDate,
-            @RequestParam @NotNull @DateTimeFormat(pattern="yyyy-MM-dd") Date endedDate,
+            @RequestParam(defaultValue = "2000-01-01") @NotNull @DateTimeFormat(pattern="yyyy-MM-dd") Date beginDate,
+            @RequestParam(defaultValue = "2100-12-31") @NotNull @DateTimeFormat(pattern="yyyy-MM-dd") Date endedDate,
             @RequestParam(required = false) String searchTitle,
             @RequestParam(defaultValue = "10") @Min(1) Integer limit,
             @RequestParam(defaultValue = "0") @Min(0) Integer offset) {
@@ -61,31 +63,32 @@ public class QuestionnaireController {
     //將 問卷及子問題 儲存在 session
     @PostMapping("/session/loadQuestionnaire")
     public ResponseEntity<?> questionLoadToSession(
-            @RequestBody QuestionnaireSessionRequest questionnaireSessionRequest,
+            @RequestBody @Valid QuestionnaireSessionRequest questionnaireSessionRequest,
             HttpSession session
             ) {
-        session.setAttribute("quName", questionnaireSessionRequest.getQuName());
+        session.setAttribute("quTitle", questionnaireSessionRequest.getQuTitle());
         session.setAttribute("quDescription", questionnaireSessionRequest.getQuDescription());
         session.setAttribute("beginDate", questionnaireSessionRequest.getBeginDate());
         session.setAttribute("endedDate", questionnaireSessionRequest.getEndedDate());
         session.setAttribute("questionList", questionnaireSessionRequest.getQuestionList());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
+    //新增問卷問題
 
-    @GetMapping("/session/readQuestionnaire")
-    public ResponseEntity<?> readQuestionnaire(HttpServletRequest request,HttpSession session1) {
-        PrimaryQuestionnaire questionnaire = new PrimaryQuestionnaire();
-        HttpSession session = request.getSession();
-        log.info("id:{}", session.getId());
-        log.info("id1:{}", session1.getId());
-        log.info("quName:{}", session.getAttribute("quName"));
-        log.info("quDescription:{}", session.getAttribute("quDescription"));
-        log.info("beginDate:{}", session.getAttribute("beginDate"));
-        log.info("endedDate:{}", session.getAttribute("endedDate"));
-        log.info("questionList:{}", session.getAttribute("questionList"));
-        Object questionList = session.getAttribute("questionList");
-
-        return ResponseEntity.status(HttpStatus.OK).build();
+    @PostMapping("/primaryQuestionnaires")
+    public ResponseEntity<?> readQuestionnaire(HttpSession session, @RequestParam(defaultValue = "UNPUBLISHED")QuestionnaireStatus status) {
+        PrimaryQuestionnaire primaryQuestionnaire = new PrimaryQuestionnaire();
+        primaryQuestionnaire.setPqTitle(session.getAttribute("quTitle").toString());
+        primaryQuestionnaire.setPqDescription(session.getAttribute("quDescription").toString());
+        primaryQuestionnaire.setPqCreatedDate(new Date(session.getAttribute("beginDate").toString()));
+        primaryQuestionnaire.setPqEndedDate(new Date(session.getAttribute("endedDate").toString()));
+        primaryQuestionnaire.setPqStatus(status);
+        Integer pqId = questionnaireService.createPrimaryQuestionnaire(primaryQuestionnaire);
+        Question question = new Question();
+        question.setPqId(pqId);
+        List<QuestionRequest> list = (List<QuestionRequest>) session.getAttribute("questionList");
+        questionnaireService.createQuestion(pqId, list);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping("/session/clear")

@@ -1,9 +1,9 @@
 package com.example.questionnaireproject.dto;
 
-import com.example.questionnaireproject.model.Question;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
@@ -12,10 +12,13 @@ import java.util.List;
 @Getter
 public class QuestionnaireSessionRequest {
     @NotNull
-    private String quName;
+    private String quTitle;
     @NotNull
     private String quDescription;
+    @NotNull
     private Date beginDate;
+    @NotNull
     private Date endedDate;
+    @NotEmpty
     private List<QuestionRequest> questionList;
 }

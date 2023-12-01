@@ -4,6 +4,7 @@ import com.example.questionnaireproject.constants.QuestionnaireStatus;
 import com.example.questionnaireproject.dto.QuestionRequest;
 import com.example.questionnaireproject.dto.QuestionnaireQueryParam;
 import com.example.questionnaireproject.dto.QuestionnaireSessionRequest;
+import com.example.questionnaireproject.dto.QuestionnaireWrapper;
 import com.example.questionnaireproject.model.PrimaryQuestionnaire;
 import com.example.questionnaireproject.model.Question;
 import com.example.questionnaireproject.service.QuestionnaireService;
@@ -18,7 +19,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
@@ -39,7 +42,7 @@ public class QuestionnaireController {
             @RequestParam(defaultValue = "2000-01-01") @NotNull @DateTimeFormat(pattern="yyyy-MM-dd") Date beginDate,
             @RequestParam(defaultValue = "2100-12-31") @NotNull @DateTimeFormat(pattern="yyyy-MM-dd") Date endedDate,
             @RequestParam(required = false) String searchTitle,
-            @RequestParam(defaultValue = "10") @Min(1) Integer limit,
+            @RequestParam(defaultValue = "10") @Max(100) @Min(1) Integer limit,
             @RequestParam(defaultValue = "0") @Min(0) Integer offset) {
         QuestionnaireQueryParam questionnaireQueryParam = new QuestionnaireQueryParam();
         questionnaireQueryParam.setBeginDate(beginDate);
@@ -57,7 +60,15 @@ public class QuestionnaireController {
         page.setTotal(total);
         page.setResults(primaryQuestionnaireList);
         return ResponseEntity.status(HttpStatus.OK).body(page);
+    }
 
+
+
+    //查詢問卷的子問題
+    @GetMapping("/primaryQuestionnaires/{pqId}/questions")
+    public ResponseEntity<List<Question>> getQuestionsByPqId(@PathVariable Integer pqId) {
+        List<Question> questionList = questionnaireService.getQuestionsByPqId(pqId);
+        return ResponseEntity.status(HttpStatus.OK).body(questionList);
     }
 
     //將 問卷及子問題 儲存在 session
@@ -74,7 +85,6 @@ public class QuestionnaireController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
     //新增問卷問題
-
     @PostMapping("/primaryQuestionnaires")
     public ResponseEntity<?> readQuestionnaire(HttpSession session, @RequestParam(defaultValue = "UNPUBLISHED")QuestionnaireStatus status) {
         PrimaryQuestionnaire primaryQuestionnaire = new PrimaryQuestionnaire();
@@ -85,12 +95,31 @@ public class QuestionnaireController {
         primaryQuestionnaire.setPqStatus(status);
         List<QuestionRequest> list = (List<QuestionRequest>) session.getAttribute("questionList");
         questionnaireService.createPrimaryQuestionnaire(primaryQuestionnaire, list);
+        session.invalidate();
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @GetMapping("/session/clear")
-    public void sessionClear() {
+    // 修改已儲存在資料庫的問卷
+    @PutMapping("/primaryQuestionnaires/{pqId}/Questions")
+    public ResponseEntity<?> updatePrimaryQuestionnaireAndQuesions(
+            @PathVariable @NotNull Integer pqId,
+            @RequestBody @NotNull  QuestionnaireWrapper questionnaireWrapper
+            ){
+        QuestionnaireWrapper questionnaireWrapper1 = questionnaireService.updatePrimaryQuestionnaireAndQuesions(pqId, questionnaireWrapper);
 
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    // 根據 q_id 刪除 問卷的子問題，用於編輯問卷時會 call 的 API
+    @PostMapping("/question/delete")
+    public ResponseEntity<?> deleteQuestion(@RequestBody @NotEmpty List<Integer> idList) {
+        questionnaireService.deleteQuestionByQId(idList);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @PostMapping("/primaryQuestionnaires/delete")
+    public ResponseEntity<?> deletePrimaryQuestionnaires(@RequestBody @NotEmpty List<Integer> idList) {
+        questionnaireService.deletePrimaryQuestionnaires(idList);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 }

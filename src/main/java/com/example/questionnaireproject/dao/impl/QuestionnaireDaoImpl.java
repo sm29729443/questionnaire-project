@@ -5,6 +5,7 @@ import com.example.questionnaireproject.dto.QuestionRequest;
 import com.example.questionnaireproject.dto.QuestionnaireQueryParam;
 import com.example.questionnaireproject.model.PrimaryQuestionnaire;
 import com.example.questionnaireproject.model.Question;
+import com.example.questionnaireproject.rowmapper.QuestionRowMapper;
 import com.example.questionnaireproject.rowmapper.QuestionnaireRowMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -86,12 +87,91 @@ public class QuestionnaireDaoImpl implements QuestionnaireDao {
         namedParameterJdbcTemplate.batchUpdate(sql, parameterSources);
     }
 
-    public String addFilteringSql(String sql, Map<String, Object> map, QuestionnaireQueryParam questionnaireQueryParam) {
+    @Override
+    public List<Question> getQuestionsByPqId(Integer pqId) {
+        String sql = "SELECT q_id, pq_id, q_problem, q_answer, require_select, problem_type " +
+                "FROM question WHERE pq_id = :pqId";
+        Map<String, Object> map = new HashMap<>();
+        map.put("pqId", pqId);
+        List<Question> questionList = namedParameterJdbcTemplate.query(sql, map, new QuestionRowMapper());
+        return questionList;
+    }
+
+    @Override
+    public PrimaryQuestionnaire updatePrimaryQuestionnare(Integer pqId, PrimaryQuestionnaire primaryQuestionnaire) {
+        String sql = "UPDATE primary_questionnaire SET pq_title = :pqTitle, pq_status = :pqStatus, " +
+                " pq_created_date = :pqCreatedDate, pq_ended_date = :pqEndedDate, pq_description = :pqDescription " +
+                " WHERE pq_id = :pqId ";
+        Map<String, Object> map = new HashMap<>();
+        map.put("pqId", primaryQuestionnaire.getPqId());
+        map.put("pqTitle", primaryQuestionnaire.getPqTitle());
+        map.put("pqStatus", primaryQuestionnaire.getPqStatus().toString());
+        map.put("pqCreatedDate", primaryQuestionnaire.getPqCreatedDate());
+        map.put("pqEndedDate", primaryQuestionnaire.getPqEndedDate());
+        map.put("pqDescription", primaryQuestionnaire.getPqDescription());
+        namedParameterJdbcTemplate.update(sql, map);
+        return null;
+    }
+
+    @Override
+    public void updateQuestion(Integer pqId, List<Question> updateQuestions) {
+        String sql = "UPDATE question SET q_problem = :qProblem, q_answer = :qAnswer, require_select = :requireSelect," +
+                "  problem_type = :problemType WHERE q_id = :qId";
+        Map<String, Object> map = new HashMap<>();
+        MapSqlParameterSource[] parameterSources = new MapSqlParameterSource[updateQuestions.size()];
+        for (int i = 0; i < updateQuestions.size(); i++) {
+            Question question = updateQuestions.get(i);
+            parameterSources[i] = new MapSqlParameterSource();
+            parameterSources[i].addValue("qId", question.getQId());
+            parameterSources[i].addValue("qProblem", question.getQProblem());
+            parameterSources[i].addValue("qAnswer", question.getQAnswer());
+            parameterSources[i].addValue("requireSelect", question.getRequireSelect());
+            parameterSources[i].addValue("problemType", question.getProblemType().toString());
+        }
+        namedParameterJdbcTemplate.batchUpdate(sql, parameterSources);
+
+    }
+
+    @Override
+    public void deletePrimaryQuestionnaire(List<Integer> pqIdList) {
+        String sql = "DELETE FROM primary_questionnaire WHERE pq_id = :pqId";
+        Map<String, Object> map = new HashMap<>();
+        MapSqlParameterSource[] parameterSources = new MapSqlParameterSource[pqIdList.size()];
+        for (int i = 0; i < pqIdList.size(); i++) {
+            Integer pqId = pqIdList.get(i);
+            parameterSources[i] = new MapSqlParameterSource();
+            parameterSources[i].addValue("pqId", pqId);
+        }
+        namedParameterJdbcTemplate.batchUpdate(sql, parameterSources);
+    }
+
+    @Override
+    public void deleteQuestionByPqId(List<Integer> idList) {
+        String sql = "DELETE FROM question WHERE pq_id = :id";
+        deleteQuestion(sql, idList);
+    }
+    @Override
+    public void deleteQuestionByQId(List<Integer> idList) {
+        String sql = "DELETE FROM question WHERE q_id = :id";
+        deleteQuestion(sql, idList);
+    }
+
+    private String addFilteringSql(String sql, Map<String, Object> map, QuestionnaireQueryParam questionnaireQueryParam) {
         // 判斷是否有 搜尋標題 的模糊查詢
         if (questionnaireQueryParam.getSearchTitle() != null) {
             sql = sql + " AND pq_title LIKE :pqTitle";
             map.put("pqTitle", "%" + questionnaireQueryParam.getSearchTitle() + "%");
         }
         return sql;
+    }
+
+    private void deleteQuestion(String sql, List<Integer> idList) {
+        MapSqlParameterSource[] parameterSources = new MapSqlParameterSource[idList.size()];
+        for (int i = 0; i < idList.size(); i++) {
+            Integer id = idList.get(i);
+            parameterSources[i] = new MapSqlParameterSource();
+            parameterSources[i].addValue("id", id);
+        }
+        namedParameterJdbcTemplate.batchUpdate(sql, parameterSources);
     }
 }

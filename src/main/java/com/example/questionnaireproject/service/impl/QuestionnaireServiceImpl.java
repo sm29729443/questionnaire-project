@@ -4,8 +4,10 @@ import com.example.questionnaireproject.dao.QuestionnaireDao;
 import com.example.questionnaireproject.dto.QuestionRequest;
 import com.example.questionnaireproject.dto.QuestionnaireQueryParam;
 import com.example.questionnaireproject.dto.QuestionnaireWrapper;
+import com.example.questionnaireproject.dto.UserInfoRequest;
 import com.example.questionnaireproject.model.PrimaryQuestionnaire;
 import com.example.questionnaireproject.model.Question;
+import com.example.questionnaireproject.model.UserInfoOne;
 import com.example.questionnaireproject.service.QuestionnaireService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -80,6 +82,25 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
         questionnaireDao.deleteQuestionByQId(idList);
     }
 
+    @Override
+    public void createAnswerResults(List<UserInfoRequest> userInfoRequest) {
+        questionnaireDao.createAnswerResults(userInfoRequest);
+    }
+
+    @Override
+    public List<UserInfoOne> getQuestionnaireAnswer(Integer pqId) {
+        return questionnaireDao.getQuestionnaireAnswer(pqId);
+    }
+
+    @Override
+    public List<PrimaryQuestionnaire> getUserPrimaryQuestionnaires(QuestionnaireQueryParam questionnaireQueryParam) {
+        return questionnaireDao.getUserPrimaryQuestionnaires(questionnaireQueryParam);
+    }
+
+    @Override
+    public Integer countUserQuestionnaires(QuestionnaireQueryParam questionnaireQueryParam) {
+        return questionnaireDao.countUserQuestionnaires(questionnaireQueryParam);
+    }
 
 
 }

@@ -2,9 +2,11 @@ package com.example.questionnaireproject.model;
 
 import com.example.questionnaireproject.constants.QuestionnaireStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.Future;
 import java.util.Date;
 
 

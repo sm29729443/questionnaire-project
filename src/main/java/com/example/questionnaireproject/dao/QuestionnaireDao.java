@@ -2,8 +2,10 @@ package com.example.questionnaireproject.dao;
 
 import com.example.questionnaireproject.dto.QuestionRequest;
 import com.example.questionnaireproject.dto.QuestionnaireQueryParam;
+import com.example.questionnaireproject.dto.UserInfoRequest;
 import com.example.questionnaireproject.model.PrimaryQuestionnaire;
 import com.example.questionnaireproject.model.Question;
+import com.example.questionnaireproject.model.UserInfoOne;
 
 import java.util.List;
 
@@ -31,4 +33,12 @@ public interface QuestionnaireDao {
     void deleteQuestionByPqId(List<Integer> idList);
 
     void deleteQuestionByQId(List<Integer> qIdList);
+
+    void createAnswerResults(List<UserInfoRequest> userInfoRequest);
+
+    List<UserInfoOne> getQuestionnaireAnswer(Integer pqId);
+
+    List<PrimaryQuestionnaire> getUserPrimaryQuestionnaires(QuestionnaireQueryParam questionnaireQueryParam);
+
+    Integer countUserQuestionnaires(QuestionnaireQueryParam questionnaireQueryParam);
 }
